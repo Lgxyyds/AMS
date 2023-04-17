@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org" xmlns:c="http://www.w3.org/1999/XSL/Transform">
+<head>
+    <meta charset="UTF-8">
+    <title>LGX-AMS</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8"/>
+    <link rel="stylesheet" href="/xadmin/css/font.css" th:href="@{/xadmin/css/font.css}">
+    <link rel="stylesheet" href="/xadmin/css/xadmin.css" th:href="@{/xadmin/css/xadmin.css}">
+    <script src="/xadmin/lib/layui/layui.js" charset="utf-8" th:src="@{/xadmin/lib/layui/layui.js}"></script>
+    <script type="text/javascript" src="/xadmin/js/xadmin.js" th:src="@{/xadmin/js/xadmin.js}"></script>
+    <script type="text/javascript" src="/xadmin/js/rollpage.js"></script>
+    <script type="text/javascript" src="/plugins/jquery/jquery-3.6.0.min.js"></script>
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <!-- 可选的 Bootstrap 主题文件（一般不用引入） -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+
+    <!--[if lt IE 9]>
+      <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+      <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style type="text/css">
+        .page-num-ul ul li{
+            float: left;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body ">
+                    <form class="layui-form layui-col-space5">
+                        <div class="layui-inline layui-show-xs-block">
+                            <input class="layui-input" autocomplete="off" placeholder="开始日期" name="start" id="start">
+                        </div>
+                        <div class="layui-inline layui-show-xs-block">
+                            <input class="layui-input" autocomplete="off" placeholder="截止日期" name="end" id="end">
+                        </div>
+                        <div class="layui-inline layui-show-xs-block">
+                            <button class="layui-btn" lay-submit="" lay-filter="sreach"><i
+                                    class="layui-icon">&#xe615;</i></button>
+                        </div>
+                        <input type="hidden" name="pageIndex" value="1"/>
+                    </form>
+                </div>
+                <div class="layui-card-header" th:if="${totalRow != 0}">
+<!--                    <button class="layui-btn layui-btn-danger" onclick="delAll()">-->
+<!--                        <i class="layui-icon"></i>批量删除-->
+<!--                    </button>-->
+                    <button class="layui-btn" onclick="xadmin.open('上传文件','/main/reviewFile/upload',700,500)">
+                        <i class="layui-icon"></i>上传
+                    </button>
+                    <button class="layui-btn" onclick="approvedAll()">
+                        <i class="layui-icon"></i>审批通过
+                    </button>
+                    <button class="layui-btn layui-btn-danger" onclick="returnAll()">
+                        <i class="layui-icon"></i>返还
+                    </button>
+                    <button class="layui-btn" onclick="window.location.href='http://'+window.location.host+'/main/reviewFile/list'">
+                        <i class="layui-icon"></i>刷新
+                    </button>
+<!--                    <button class="layui-btn" onclick="xadmin.open('上传文件','/main/file/upload',700,500)">-->
+<!--                        <i class="layui-icon"></i>提交-->
+<!--                    </button>-->
+                </div>
+                <div class="layui-container" th:if="${totalRow == 0}">
+                    <div class="fly-panel">
+                        <div class="fly-none">
+                            <p>当前没有需要审核的文件</p>
+                            <p><a href="#" onclick="xadmin.open('上传文件','/main/reviewFile/upload',700,500)">上传 </a></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-card-body layui-table-body layui-table-main">
+                    <table class="layui-table layui-form" th:if="${totalRow != 0}">
+                        <thead>
+                        <tr>
+                            <th>
+                                <input type="checkbox" lay-filter="checkall" name="" lay-skin="primary">
+                            </th>
+                            <th>文件编号</th>
+                            <th>文件名称</th>
+                            <th>文件大小</th>
+                            <th>文件标签</th>
+                            <th>下载次数</th>
+                            <th>提交时间</th>
+                            <th>提交者</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="file, status:${list}">
+                            <td>
+                                <!--<div class="layui-unselect layui-form-checkbox" lay-skin="primary" th:data-id='${status.count}'><i class="layui-icon">&#xe605;</i></div>-->
+                                <input type="checkbox" name="id" th:value="${file.id}" lay-skin="primary">
+                            </td>
+                            <td>[[${status.count}]]</td>
+                            <td>[[${file.filename}]]</td>
+                            <td>[[${file.filesize}]]B</td>
+                            <td>[[${file.filelabel}]]</td>
+                            <td>[[${file.downloadfrequency}]]</td>
+                            <td>[[${#dates.format(file.uploadtime, 'yyyy-MM-dd HH:mm:ss')}]]</td>
+                            <td>[[${file.uname}]]</td>
+                            <td>[[${file.status}]]</td>
+
+                            <td class="td-manage">
+<!--                                <a onclick="member_stop(this,'10001')" href="javascript:;"  title="下载">-->
+<!--                                    <i class="layui-icon">&#xe601;</i>-->
+<!--                                </a>-->
+
+                                <button title="下载" size="small" th:attr="realfilename=${file.realfilename},id=${file.id},downloadfrequency=${file.downloadfrequency}" onclick="download(this)">
+                                    <i class="layui-icon">&#xe601;</i>
+                                </button>
+                                <button title="编辑" id="fileId" name="fileId" th:value="${file.id}" onclick="window.location.href='http://'+window.location.host+'/main/reviewFile/update?fileId='+this.value">
+                                    <i class="layui-icon">&#xe642;</i>
+                                </button>
+                                <button title="删除" th:attr="id=${file.id}" onclick="filedel(this)" href="javascript:;">
+                                    <i class="layui-icon">&#xe640;</i>
+                                </button>
+                                <button title="浏览" id="fid" name="fid" th:value="${file.id}" onclick="window.location.href='http://'+window.location.host+'/main/reviewFile/reviewFileView?fileId='+this.value">
+                                    <i class="layui-icon">&#xe611;</i>
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <input type="hidden" id="toTalPage" th:value="${toTalPage}"/>
+                <div class="page-bar" text-align="right">
+                    <ul class="page-num-ul clearfix">
+                        <ul>
+                            <li>共<span th:text="${totalRow}"/>条记录 </li>
+                            <li><span th:text="${currentPageNo}"/></li>
+                            <li>/</li>
+                            <li><span th:text="${toTalPage}"/>页 </li>
+                        </ul>
+
+                        <li th:if="${currentPageNo > 1}">
+                            <button th:attr="dataCurrentPageNo=1" onclick="javascript:page_nav(document.forms[0],this);">首页</button>
+                            <button th:name="currentPageNo" th:value="${currentPageNo}" th:attr="dataCurrentPageNo=${currentPageNo}-1" onclick="javascript:page_nav(document.forms[0],this);">上一页</button>
+                        </li>
+                        <li th:if="${currentPageNo < toTalPage }">
+                            <button th:name="currentPageNo" th:value="${currentPageNo}" th:attr="dataCurrentPageNo=${currentPageNo}+1" onclick="javascript:page_nav(document.forms[0],this);">下一页</button>
+                            <button th:name="toTalPage" th:value="${toTalPage}" th:attr="dataCurrentPageNo=${toTalPage}" onclick="javascript:page_nav(document.forms[0],this);">最后一页</button>
+                        </li>
+                    </ul>
+                    <span class="page-go-form"><label>跳转至</label>
+                        <input type="text" name="inputPage" id="inputPage" class="page-key" />页
+                        <button type="button" class="page-btn" onclick='javascript:jump_to(document.forms[0],document.getElementById("inputPage").value)'>GO</button>
+		            </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    layui.use(['laydate', 'form'], function () {
+        var laydate = layui.laydate;
+        var form = layui.form;
+
+        // 监听全选
+        form.on('checkbox(checkall)', function (data) {
+
+            if (data.elem.checked) {
+                $('tbody input').prop('checked', true);
+            } else {
+                $('tbody input').prop('checked', false);
+            }
+            form.render('checkbox');
+        });
+
+        //执行一个laydate实例
+        laydate.render({
+            elem: '#start' //指定元素
+        });
+
+        //执行一个laydate实例
+        laydate.render({
+            elem: '#end' //指定元素
+        });
+
+
+    });
+
+    /*用户-删除*/
+    function filedel(obj) {
+        var id = obj.getAttribute("id");
+        layer.confirm('确认要删除吗？', function () {
+            //发异步删除数据
+            $.get('/main/reviewFile/delete?id=' + id, function (data) {
+                if (data == 1) {
+                    $(obj).parents("tr").remove();
+                    layer.msg('已删除!', {icon: 1, time: 1000});
+                    window.location.href = window.location.href;//自动刷新页面
+                } else {
+                    layer.msg("删除失败！！！", function () {
+
+                    });
+                }
+            })
+        });
+    }
+
+    function download(obj) {
+        var filename = obj.getAttribute("realfilename");
+        var id = obj.getAttribute("id");
+        var downloadfrequency = obj.getAttribute("downloadfrequency");
+
+
+        window.open("http://" + window.location.host + "/main/reviewFile/download?fileName=" + filename + "&id=" + id + "&downloadfrequency=" + downloadfrequency,
+            '_blank');
+        window.location.href = window.location.href;//自动刷新页面
+    }
+
+
+    function delAll(argument) {
+        var ids = [];
+
+        // 获取选中的id 
+        $('tbody input').each(function (index, el) {
+            if ($(this).prop('checked')) {
+                ids.push($(this).val())
+            }
+        });
+
+
+        layer.confirm('确认要删除吗？' + ids.toString(), function (index) {
+            //捉到所有被选中的，发异步进行删除
+            $.get('/main/reviewFile/batchdelete?ids=' + ids.toString(), function (data) {
+                if (data == 1) {
+                    layer.msg('批量删除成功！', {icon: 1});
+                    $(".layui-form-checked").not('.header').parents('tr').remove();
+                    window.location.href = window.location.href;//自动刷新页面
+                } else {
+                    layer.msg('批量删除失败！', {icon: 1});
+                }
+            });
+
+        });
+    }
+
+    function approvedAll(argument) {
+        var ids = [];
+
+        // 获取选中的id
+        $('tbody input').each(function (index, el) {
+            if ($(this).prop('checked')) {
+                ids.push($(this).val())
+            }
+        });
+
+
+        layer.confirm('确认要审核通过吗？' + ids.toString(), function (index) {
+            //捉到所有被选中的，发异步进行删除
+            $.get('/main/reviewFile/approved?ids=' + ids.toString(), function (data) {
+                if (data == 1) {
+                    layer.msg('审核成功！', {icon: 1});
+                    $(".layui-form-checked").not('.header').parents('tr').remove();
+                    window.location.href = window.location.href;//自动刷新页面
+                } else {
+                    layer.msg('审核失败！', {icon: 1});
+                }
+            });
+
+        });
+    }
+
+
+    function returnAll(argument) {
+        var ids = [];
+
+        // 获取选中的id
+        $('tbody input').each(function (index, el) {
+            if ($(this).prop('checked')) {
+                ids.push($(this).val())
+            }
+        });
+
+
+        layer.confirm('确认要不通过审核吗？' + ids.toString(), function (index) {
+            //捉到所有被选中的，发异步进行删除
+            $.get('/main/reviewFile/returnAll?ids=' + ids.toString(), function (data) {
+                if (data == 1) {
+                    layer.msg('返还成功或不通过！', {icon: 1});
+                    $(".layui-form-checked").not('.header').parents('tr').remove();
+                    window.location.href = window.location.href;//自动刷新页面
+                } else {
+                    layer.msg('返还或不通过失败！', {icon: 1});
+                }
+            });
+
+        });
+    }
+
+
+</script>
+</html>

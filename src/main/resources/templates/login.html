@@ -1,0 +1,170 @@
+﻿<!DOCTYPE HTML>
+<html xmlns:c="http://www.w3.org/1999/XSL/Transform">
+<head>
+	<meta charset="utf-8">
+	<title>LGX-AMS</title>
+	<meta HTTP-EQUIV="pragma" CONTENT="no-cache" />
+	<meta HTTP-EQUIV="Cache-Control" CONTENT="no-cache, must-revalidate" />
+	<meta HTTP-EQUIV="expires" CONTENT="0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="format-detection" content="telephone=yes">
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+    <link href="/img/icons/favicon2.ico" rel="Shortcut Icon" type="image/x-icon"/>
+	<link type="text/css" rel="stylesheet" href="/css/login.css"/>
+	<link type="text/css" rel="stylesheet" href="/plugins/bootstrap/css/bootstrap.min.css">
+	<script type="text/javascript" src="/plugins/vue/vue.js"></script>
+	<script type="text/javascript" src="/plugins/jquery/jquery-3.6.0.min.js"></script>
+	<script type="text/javascript" src="/plugins/vue/es6-promise.min.js"></script>
+	<script type="text/javascript" src="/plugins/vue/es6-promise.auto.min.js"></script>
+	<script type="text/javascript" src="/js/common/util/crypto.js"></script>
+	<script type="text/javascript">
+		function addFavorite(){
+			var url = window.location;
+			var title = document.title;
+			try {
+		        window.external.addFavorite(url, title);
+		    } catch (e) {
+		        try {
+		            window.sidebar.addPanel(title, url, "");
+		        } catch (e) {
+		        	alert('您的浏览器不支持,请按 Ctrl+D 手动收藏!');
+		        }
+		    }
+		}
+	</script>
+</head>
+<body>
+	<!-- 头部 -->
+    <div class="header">
+    	<div class="logo"><span class="name" style="text-align: center" >LGX-AMS</span></div>
+    </div>
+	<!-- 主体部分 -->
+	<div class="main" >
+	    <div class="bannner">
+	    	<div class="loginMain">
+		    	<div class="loginSlogan" style="display:block;">高效管理档案&nbsp;&nbsp;提升办公效率</div>
+		    	<div class="loginSlogan" style="display:none;">移交一份档案&nbsp;&nbsp;奉献一份业绩</div>
+		    	<div class="loginSlogan" style="display:none;">与档案携手&nbsp;&nbsp;为历史存真</div>
+		    	<div class="loginSlogan" style="display:none;">归档存记忆&nbsp;&nbsp;留史鉴未来</div>
+		        <div class="loginBox" >
+			    	<div class="loginTitle">
+			        	<span>登录系统</span>
+			        </div>
+		            <div id="loginForm" class="loginForm">
+						<div class="message">{{ message }}</div>
+						<input type="hidden" ref="sk" value="${secretKey}" />
+		            	<ul class="inputBox">
+		                	<li>
+		                    	<span class="inputLeftIcon iconUser"></span>
+		                        <input type="text" class="loginInput" ref="userName" v-model="userName" :placeholder="userNamePlaceHolder" maxlength="30" @focus="clearUserNamePlaceHolder" @blur="resetUserNamePlaceHolder" @keydown.enter="login"/>
+		                        <span class="inputRightIcon iconDelete" @click="clearUserName"></span> 
+		                    </li>
+		                    <li>
+		                    	<span class="inputLeftIcon iconPass"></span>
+								<input type="text" class="loginInput" v-if="passwordType" v-model="password" />
+		                        <input type="password" class="loginInput" v-else ref="password" v-model="password" :placeholder="passwordPlaceHolder" maxlength="30" @focus="clearPasswordPlaceHolder" @blur="resetPasswordPlaceHolder" @keydown.enter="login">
+		                        <span :class="[inputRightIcon,passwordType?iconEyeOff:iconEyeOpen]" @click="changePasswordType"></span>
+		                    </li>
+		                </ul>
+						<a href="javascript:register()">
+							<input value="注册" lay-submit lay-filter="register" style="width:100%;" type="button">
+						</a>
+		                <button type="button" title='登录' class="loginButton" @click="login" >登录</button>
+		           	</div>
+		        </div>
+			</div>
+		</div>
+	</div>
+	<!-- 底部 -->
+	<div class="footer">
+	LinGuoXian
+	</div>
+	<script>
+		new Vue({
+		  el: '#loginForm',
+		  data: {
+		        userName: '',
+		        password: '',
+			    userNamePlaceHolder: '用户名',
+		        passwordPlaceHolder: '密码',
+		        passwordType:false,
+		        inputRightIcon:'inputRightIcon',
+		        iconEyeOpen:'iconEyeOpen',
+		        iconEyeOff:'iconEyeOff',
+		        message: ''
+		    },
+		    methods: {
+		    	clearUserName: function(){
+		    		this.userName = "";
+		    	},
+		    	clearUserNamePlaceHolder: function(){
+		    		this.userNamePlaceHolder = "";
+		    	},
+		    	resetUserNamePlaceHolder: function(){
+		    		this.userNamePlaceHolder = "用户名";
+		    	},
+		    	clearPasswordPlaceHolder: function(){
+		    		this.passwordPlaceHolder = "";
+		    	},
+		    	resetPasswordPlaceHolder: function(){
+		    		this.passwordPlaceHolder = "密码";
+		    	},
+		    	changePasswordType: function(){
+		    		this.passwordType = !this.passwordType;
+		    	},
+		    	login: function(){
+			    	var that = this;
+			    	//登录校验
+			      	if (!this.userName) {
+			          this.message = '请输入用户名';
+			          this.$refs.userName.focus();
+			          return;
+			        }
+			        if (!this.password) {
+			          this.message = '请输入密码';
+			          this.$refs.password.focus();
+			          return;
+			        }
+			        this.message = '正在登录，请稍后...';
+			        //提交请求
+			        $.ajax({
+			        	url: 'login.do',
+						type: 'POST',
+						datatype:"json",
+						data: {
+					    	loginName: this.userName,
+					      	password: this.password
+			        	},
+						success: function(response){
+							if(response.code=="200"){
+				        		if (that.isMobile()) {
+				        			window.location.href = "mobile/index";
+				        		}else{
+				        			window.location.href = "index";
+				        		}
+				        	}else{
+				        		that.message = response.msg;
+				        	}
+						},
+			            error: function(){
+			            	that.message = "登录出现异常，请联系系统管理员";
+			            }
+					});
+				},
+				isMobile: function() {
+					 var flag = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i);
+					 return flag;
+				}
+			}
+		});
+
+		//跳转注册
+		function register() {
+			location.href = 'register';
+		}
+
+	</script>
+</body>
+</html>

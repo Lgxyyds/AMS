@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://127.0.0.1:3306/ams?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8&useSSL=false&useInformationSchema=true&zeroDateTimeBehavior=convertToNull
+      username: root
+      password: 123456
+
+  thymeleaf:
+    prefix:
+      classpath: /templates  # 访问template下的html文件需要配置模板，映射
+    cache: false # 开发时关闭缓存,不然没法看到实时页面
+  web:
+    resources:
+      static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/,classpath:/templates/
+
+beetlsql:
+  _default: #默认配置
+    dev: true
+    basePackage: com.lgx.ams
+    #dbStyle: org.beetl.sql.core.db.MySqlStyle
+    dbStyle: org.beetl.sql.core.db.MySqlStyle
+  sqlPath: /sql
+  sqlManagers: systemSqlManager #多个数据源
+  systemSqlManager:  #数据源详细配置
+    ds: systemDataSource
+    basePackage: com.lgx.ams
+
+#logging:
+#  config: classpath:log4j.xml
+#  level:
+#    com.lgx.ams: trace

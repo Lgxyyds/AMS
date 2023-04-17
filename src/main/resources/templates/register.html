@@ -1,0 +1,141 @@
+<!doctype html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>LGX-AMS</title>
+    <meta name="renderer" content="webkit|ie-comp|ie-stand">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+    <link href="/img/icons/favicon2.ico" rel="Shortcut Icon" type="image/x-icon"/>
+    <link rel="stylesheet" href="/xadmin/css/font.css">
+    <link rel="stylesheet" href="/xadmin/css/login.css">
+    <link rel="stylesheet" href="/xadmin/css/xadmin.css">
+<!--    <script type="text/javascript" src="/xadmin/js/jquery.min.js" th:src="@{/xadmin/js/jquery.min.js}"></script>-->
+    <script type="text/javascript" src="/plugins/jquery/jquery-3.6.0.min.js"></script>
+    <script src="/xadmin/lib/layui/layui.js" charset="utf-8"></script>
+    <!--[if lt IE 9]>
+      <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js" ></script>
+      <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body class="login-bg">
+
+<div class="login layui-anim layui-anim-up">
+    <div class="message">注册</div>
+    <div id="darkbannerwrap"></div>
+
+    <form method="post" class="layui-form">
+        <input id="username" name="username" placeholder="请输入用户名" type="text" class="layui-input">
+        <span id="userInfo"></span>
+        <hr class="hr20">
+        <input id="password" name="password" placeholder="请输入密码" type="password" class="layui-input">
+        <span id="password-mess"></span>
+        <hr class="hr20">
+        <input id="repeatpassword" name="repeatpassword" placeholder="请再输入一次密码" type="password" class="layui-input">
+        <span id="repeatpassword-mess"></span>
+        <hr class="hr20">
+        <input value="注册" lay-submit lay-filter="register" style="width:100%;" type="submit">
+        <hr class="hr20">
+    </form>
+    <input id="reset" value="重置" lay-submit lay-filter="reset" style="width:100%;" type="submit">
+    <hr class="hr15">
+    <a th:href="@{/login}">已有账号？赶紧 登陆 吧</a>
+</div>
+
+<script>
+    var userfalg = true;
+    var pwdfalg = true;
+    var repwdfalg = false;
+    $(function () {
+        //表单验证以及检测用户名是否存在
+        $("#username").blur(function () { //文本框鼠标焦点消失事件
+            var username = $("#username").val();
+            if (username != "") {
+                var reg_username = /^\w{4,10}$/;
+                var flag = reg_username.test(username);
+                if (!flag) {
+                    $("#userInfo").html("格式不正确！");
+                    userfalg = false;
+                    alert(userfalg)
+                } else {
+                    $.get("checkUser?username=" + username, function (data) //此处get方式 可换为post方式按需求调整，其他无需修改使用方式一样
+                    {
+                        if (data == "no") {
+                            userfalg = false;
+                            $("#userInfo").html("用户名已存在！"); //向ID为chk的元素内添加html代码
+                        } else {
+                            userfalg = true;
+                            $("#userInfo").html(""); //向ID为chk的元素内添加html代码
+                        }
+                    });
+                }
+            }
+        })
+
+        $("#password").blur(function () {
+            var password = $("#password").val();
+            if (password != "") {
+                var reg_password = /^\w{6,12}$/;
+                var flag = reg_password.test(password);
+                if (!flag) {
+                    $("#password-mess").html("密码格式不正确！");
+                    pwdfalg = false;
+                } else {
+                    $("#password-mess").html("");
+                    pwdfalg = true;
+                }
+            }
+        })
+
+        $("#repeatpassword").blur(function () {
+            var repeatpassword = $("#repeatpassword").val();
+            var password = $("#password").val();
+            var flag = repeatpassword == password;
+            if (!flag) {
+                $("#repeatpassword-mess").html("两次密码不一致！");
+                repwdfalg = false;
+            } else {
+                $("#repeatpassword-mess").html("");
+                repwdfalg = true;
+            }
+        })
+
+        layui.use('form', function () {
+            var form = layui.form;
+            //监听提交
+            form.on('submit(register)', function (data) {
+                // 可以拿到数据var a = JSON.stringify(data.field); 但是不是标准的数据格式，需要转换
+                layer.msg("请稍等...", function () {
+                    if (userfalg && pwdfalg && repwdfalg) {
+                        //触发登录操作
+                        $.post("register", data.field, function (data) {
+                            if (data == 1) {
+                                location.href = 'success';
+                            } else {
+                                layer.msg("哎呀出错了！请重试...", function () {
+                                    //把账号密码清理掉
+                                    $("#username").val("").focus();
+                                    $("#password").val("");
+                                });
+                            }
+                        });
+                    } else {
+                        layer.msg("申请有误！请确认后再次提交！", function () {
+                        });
+                    }
+                });
+                return false;
+            });
+        });
+        //重置按钮
+        $("#reset").click(function () {
+            $("#username").val("").focus();
+            $("#password").val("");
+            $("#repeatpassword").val("");
+        })
+    });
+</script>
+</body>
+</html>
